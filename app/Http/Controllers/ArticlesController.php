@@ -61,9 +61,11 @@ class ArticlesController extends Controller
      */
     public function store(StoreArticlePostRequest $request)
     {
+        $data = $request->all();
+
         $slugify = new Slugify();
-        $slug = $slugify->slugify($request->input('title'));
-        $publishDate = new Carbon($request->input('published_at'));
+        $data['slug'] = $slugify->slugify($request->input('title'));
+        $data['published_at'] = new Carbon($request->input('published_at'));
 
         if ($request->hasFile('main_image')) {
             $extension = $request->file('main_image')->getClientOriginalExtension();
@@ -72,17 +74,11 @@ class ArticlesController extends Controller
             $path = public_path().'/img/';
 
             $request->file('main_image')->move($path, $fileName);
+
+            $data['main_picture'] = asset('/img/'.$fileName);
         }
 
-        Article::create([
-            'title' => $request->input('title'),
-            'slug' => $slug,
-            'quote' => $request->input('quote'),
-            'content' => $request->input('content'),
-            'author' => Auth::user()->id,
-            'main_picture' => asset('/img/'.$fileName),
-            'published_at' => $publishDate->toDateTimeString()
-        ]);
+        $article = auth()->user()->articles()->create($data);
 
         return redirect()->route('articles.show', [$article]);
     }
