@@ -35,9 +35,11 @@ class ArticlesController extends Controller
      * @param  String       $slug       The slug of the article
      * @return response
      */
-    public function show($slug)
+    public function show(Article $article)
     {
-        $article = Article::where('slug', '=', $slug)->where('published_at', '<', Carbon::now())->firstOrFail();
+        if($article->published_at > Carbon::now()){
+            return abort(404); // of wat dan ook
+        }
         $author = $article->user->toArray();
         $niceDate = Carbon::createFromTimeStamp(strtotime($article->published_at))->diffForHumans();
 
@@ -67,7 +69,7 @@ class ArticlesController extends Controller
         if ($request->hasFile('main_image')) {
             $extension = $request->file('main_image')->getClientOriginalExtension();
             $fileName = $slug.'.'.$extension;
-            
+
             $path = public_path().'/img/';
 
             $request->file('main_image')->move($path, $fileName);
@@ -83,7 +85,7 @@ class ArticlesController extends Controller
             'published_at' => $publishDate->toDateTimeString()
         ]);
 
-        return redirect()->route('articles.show', [$slug]);
+        return redirect()->route('articles.show', [$article]);
     }
 
     /**
@@ -91,10 +93,8 @@ class ArticlesController extends Controller
      * @param  String       $slug       The slug of the article
      * @return response
      */
-    public function edit($slug)
+    public function edit(Article $article)
     {
-        $article = Article::where('slug', '=', $slug)->firstOrFail();
-
         return view('articles.edit', compact('article'));
     }
 
@@ -104,10 +104,8 @@ class ArticlesController extends Controller
      * @param  String                  $slug    The slug of the article to update
      * @return response
      */
-    public function update(StoreArticlePostRequest $request, $slug)
+    public function update(StoreArticlePostRequest $request, Article $article)
     {
-        $article = Article::where('slug', '=', $slug)->firstOrFail();
-
         $slugify = new Slugify();
         $newSlug = $slugify->slugify($request->input('title'));
         $publishDate = new Carbon($request->input('published_at'));
@@ -124,8 +122,8 @@ class ArticlesController extends Controller
         return redirect()->route('articles.show', [$newSlug]);
     }
 
-    public function destroy($slug)
+    public function destroy(Article $article)
     {
-        
+
     }
 }
