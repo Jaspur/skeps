@@ -27,7 +27,7 @@ $factory->define(App\Article::class, function (Faker\Generator $faker) {
         'quote' => $faker->paragraph,
         'content' => $faker->realText(),
         'author' => $faker->numberBetween(1, 10),
-        'main_picture' => null,
+        'main_picture' => $faker->imageUrl(),
         'published_at' => $faker->dateTime(),
     ];
 });
