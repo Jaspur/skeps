@@ -40,10 +40,9 @@ class ArticlesController extends Controller
         if($article->published_at > Carbon::now()){
             return abort(404); // of wat dan ook
         }
-        $author = $article->user->toArray();
         $niceDate = Carbon::createFromTimeStamp(strtotime($article->published_at))->diffForHumans();
 
-        return view('articles.view', compact('article', 'author', 'niceDate'));
+        return view('articles.view', compact('article', 'niceDate'));
     }
 
     /**
