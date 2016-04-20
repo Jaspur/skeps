@@ -105,18 +105,13 @@ class ArticlesController extends Controller
      */
     public function update(StoreArticlePostRequest $request, Article $article)
     {
-        $slugify = new Slugify();
-        $newSlug = $slugify->slugify($request->input('title'));
-        $publishDate = new Carbon($request->input('published_at'));
+        $data = $request->all();
 
-        $article->title = $request->input('title');
-        $article->slug = $newSlug;
-        $article->quote = $request->input('quote');
-        $article->content = $request->input('content');
-        $article->author = Auth::user()->id;
-        $article->main_picture = null;
-        $article->published_at = $publishDate->toDateTimeString();
-        $article->save();
+        $slugify = new Slugify(); // Mooi opgelost, maar je kunt je heel wat tijd besparen via deze package: https://github.com/cviebrock/eloquent-sluggable ;-)
+        $data['slug'] = $slugify->slugify($request->input('title'));
+        $data['published_at'] = new Carbon($request->input('published_at'));
+
+        $article->update($data);
 
         return redirect()->route('articles.show', [$newSlug]);
     }
